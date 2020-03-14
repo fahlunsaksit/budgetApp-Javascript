@@ -38,7 +38,7 @@ class UI {
 
       this.budgetAmount.textContent = value;
       this.budgetInput.value = '';
-      this.showBalance();
+
     }
   }
 
@@ -89,6 +89,7 @@ class UI {
       this.itemID++;
       this.itemList.push(expense);
       this.addExpense(expense);
+      this.showBalance();
 
     }
   }
@@ -96,11 +97,12 @@ class UI {
   //add Expense
   addExpense(expense) {
     const div = document.createElement('div');
+
     div.classList.add('expense');
-    div.innerHTML =` 
+    div.innerHTML = ` 
     <div class="expense-item d-flex justify-content-between align-items-baseline">
 
-      <h6 class="expense-title mb-0 text-uppercase list-item">${expense.titel} </h6>
+      <h6 class="expense-title mb-0 text-uppercase list-item">-${expense.titel} </h6>
         <h5 class="expense-amount mb-0 list-item">${expense.amount}</h5>
 
         <div class="expense-icons list-item">
@@ -114,19 +116,63 @@ class UI {
         </div>
 </div > `;
 
-// div.innerHTML = `<p>sdfsdf</p>`;
-
-this.expenseList.appendChild(div);
+    this.expenseList.appendChild(div);
   }
 
   //total expense
   totalExpense() {
-    let total = 400;
+    let total = 0;
+    if (this.itemList.length > 0) {
+      // for (let index = 0; index < this.itemList.length; index++) {
+      //   total += this.itemList[index];
+      //   console.log(this.itemList[index]);
+      // }
+      total = this.itemList.reduce(function (acc, curr) {
+        acc += curr.amount;
+        // console.log('total is ' + acc + ' and the current value is ' + curr.amount);
+        return acc;
+      }, 0);
+
+      // console.log(this.itemList);s
+    }
+
+    this.expenseAmount.textContent = total;
     return total;
   }
 
+  editExpense(element){
+    let id = parseInt(element.dataset.id);
+    let parent = element.parentElement.parentElement.parentElement;
+    //remove from dom
+    this.expenseList.removeChild(parent);
+    //remove from the list
+    let expenes = this.itemList.filter(function (item) {
+      return item.id === id;          
+    });
+    //show value
+    console.log(expenes);
+    this.expenseInput.value = expenes[0].titel;
+    this.amountInput.value = expenes[0].amount;
+    //remove from list
+    let tempList = this.itemList.filter(function(item){
+      return item.id !== id;
+    });
+    this.itemList = tempList;
+    this.showBalance();
+  }
 
-
+  deleteExpense(element){
+    let id = parseInt(element.dataset.id);
+    let parent = element.parentElement.parentElement.parentElement;
+    //remove from dom
+    this.expenseList.removeChild(parent);
+    //remove from  list
+    let tempList = this.itemList.filter(function(item){
+      return item.id !== id;
+    });
+    this.itemList = tempList;
+    this.showBalance();
+  }
 }
 
 function addEventListener() {
@@ -135,6 +181,8 @@ function addEventListener() {
   const expenseList = document.getElementById('expense-list');
 
   const ui = new UI();
+
+
 
   budgetForm.addEventListener('submit', function (event) {
     event.preventDefault();
@@ -146,13 +194,19 @@ function addEventListener() {
     ui.submitExpenseForm();
   });
 
-  expenseList.addEventListener('submit', function () {
-
+  expenseList.addEventListener('click', function (event) {
+    //find event edit button,delete button
+    if (event.target.parentElement.classList.contains('edit-icon')) {
+      ui.editExpense(event.target.parentElement);
+    } else if (event.target.parentElement.classList.contains('delete-icon')) {
+      ui.deleteExpense(event.target.parentElement);
+    }
   });
 
 
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+
   addEventListener();
 });
